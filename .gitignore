@@ -1,0 +1,77 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Data
+data/oxford-iiit-pet/
+data/processed/
+*.jpg
+*.jpeg
+*.png
+*.pth
+*.pt
+*.pkl
+
+# Models
+models/*.pth
+models/*.pt
+!models/.gitkeep
+
+# Database
+database/*.db
+database/*.db-journal
+
+# Reports (keep structure but ignore large files)
+reports/*.html
+reports/error_images/
+!reports/.gitkeep
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Environment variables
+.env
+.env.local
+
+# Web uploads
+web/uploads/
+web/app.log
