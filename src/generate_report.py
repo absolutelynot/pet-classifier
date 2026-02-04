@@ -45,13 +45,15 @@ def generate_html_report(results, output_path, confusion_matrix_path=None):
     report = results['classification_report']
     
     # 计算各类别准确率
+    # 注意：classification_report使用target_names时，返回的字典键是类别名称（字符串），不是数字索引
     class_accuracies = []
     for i, class_name in enumerate(class_names):
-        if i in report:
-            precision = report[i]['precision']
-            recall = report[i]['recall']
-            f1 = report[i]['f1-score']
-            support = report[i]['support']
+        # 使用类别名称作为键来访问report
+        if class_name in report:
+            precision = report[class_name]['precision']
+            recall = report[class_name]['recall']
+            f1 = report[class_name]['f1-score']
+            support = report[class_name]['support']
             class_accuracies.append({
                 'name': class_name,
                 'precision': precision,
@@ -73,6 +75,7 @@ def generate_html_report(results, output_path, confusion_matrix_path=None):
     class_accuracies.sort(key=lambda x: x['precision'], reverse=True)
     
     html_content = []
+    # HTML头部和样式（不包含需要格式化的内容）
     html_content.append("""
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -81,149 +84,149 @@ def generate_html_report(results, output_path, confusion_matrix_path=None):
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>测试准确率报告 - 宠物分类模型</title>
     <style>
-        * {
+        * {{
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-        }
-        body {
+        }}
+        body {{
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             padding: 20px;
             min-height: 100vh;
-        }
-        .container {
+        }}
+        .container {{
             max-width: 1400px;
             margin: 0 auto;
             background-color: white;
             padding: 40px;
             border-radius: 15px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-        }
-        h1 {
+        }}
+        h1 {{
             color: #333;
             text-align: center;
             margin-bottom: 10px;
             font-size: 2.5em;
-        }
-        .subtitle {
+        }}
+        .subtitle {{
             text-align: center;
             color: #666;
             margin-bottom: 30px;
             font-size: 1.1em;
-        }
-        .summary-card {
+        }}
+        .summary-card {{
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 30px;
             border-radius: 10px;
             text-align: center;
             margin-bottom: 30px;
-        }
-        .summary-card h2 {
+        }}
+        .summary-card h2 {{
             font-size: 3em;
             margin-bottom: 10px;
-        }
-        .summary-card p {
+        }}
+        .summary-card p {{
             font-size: 1.2em;
             opacity: 0.9;
-        }
-        .section {
+        }}
+        .section {{
             margin: 30px 0;
-        }
-        .section h2 {
+        }}
+        .section h2 {{
             color: #555;
             margin-bottom: 20px;
             padding-bottom: 10px;
             border-bottom: 3px solid #667eea;
-        }
-        .confusion-matrix {
+        }}
+        .confusion-matrix {{
             text-align: center;
             margin: 20px 0;
-        }
-        .confusion-matrix img {
+        }}
+        .confusion-matrix img {{
             max-width: 100%;
             height: auto;
             border-radius: 10px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        table {
+        }}
+        table {{
             width: 100%;
             border-collapse: collapse;
             margin: 20px 0;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        thead {
+        }}
+        thead {{
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-        }
-        th, td {
+        }}
+        th, td {{
             padding: 12px;
             text-align: left;
             border-bottom: 1px solid #ddd;
-        }
-        th {
+        }}
+        th {{
             font-weight: 600;
-        }
-        tbody tr:hover {
+        }}
+        tbody tr:hover {{
             background-color: #f5f5f5;
-        }
-        .metric-badge {
+        }}
+        .metric-badge {{
             display: inline-block;
             padding: 5px 10px;
             border-radius: 5px;
             font-weight: bold;
             font-size: 0.9em;
-        }
-        .metric-excellent {
+        }}
+        .metric-excellent {{
             background-color: #4CAF50;
             color: white;
-        }
-        .metric-good {
+        }}
+        .metric-good {{
             background-color: #8BC34A;
             color: white;
-        }
-        .metric-fair {
+        }}
+        .metric-fair {{
             background-color: #FFC107;
             color: #333;
-        }
-        .metric-poor {
+        }}
+        .metric-poor {{
             background-color: #FF9800;
             color: white;
-        }
-        .metric-bad {
+        }}
+        .metric-bad {{
             background-color: #F44336;
             color: white;
-        }
-        .stats-grid {
+        }}
+        .stats-grid {{
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
             margin: 20px 0;
-        }
-        .stat-card {
+        }}
+        .stat-card {{
             background-color: #f8f9fa;
             padding: 20px;
             border-radius: 10px;
             text-align: center;
             border-left: 4px solid #667eea;
-        }
-        .stat-card h3 {
+        }}
+        .stat-card h3 {{
             color: #667eea;
             margin-bottom: 10px;
-        }
-        .stat-card .value {
+        }}
+        .stat-card .value {{
             font-size: 2em;
             font-weight: bold;
             color: #333;
-        }
-        .footer {
+        }}
+        .footer {{
             text-align: center;
             margin-top: 40px;
             padding-top: 20px;
             border-top: 1px solid #ddd;
             color: #666;
-        }
+        }}
     </style>
 </head>
 <body>
@@ -317,7 +320,7 @@ def generate_html_report(results, output_path, confusion_matrix_path=None):
                         <td><span class="metric-badge {badge_class}">{precision:.2%}</span></td>
                         <td><span class="metric-badge {badge_class}">{recall:.2%}</span></td>
                         <td><span class="metric-badge {badge_class}">{f1:.2%}</span></td>
-                        <td>{support}</td>
+                        <td>{int(support)}</td>
                     </tr>
         """)
     

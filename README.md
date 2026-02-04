@@ -127,7 +127,7 @@ python error_analysis.py --model-path ../models/best_model.pth --output-path ../
 在官方测试集上生成HTML格式的测试准确率报告：
 
 ```bash
-python generate_report.py --model-path ../models/best_model.pth --use-official-test --save-confusion-matrix
+python generate_report.py --model-path ../models/best_model.pth --save-confusion-matrix
 ```
 
 报告会保存在 `reports/test_report.html`。

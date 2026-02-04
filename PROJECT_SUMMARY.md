@@ -111,7 +111,7 @@ python train.py --epochs 20
 python error_analysis.py --model-path ../models/best_model.pth
 
 # 测试准确率报告
-python generate_report.py --model-path ../models/best_model.pth --use-official-test --save-confusion-matrix
+python generate_report.py --model-path ../models/best_model.pth --save-confusion-matrix
 ```
 
 ### 第三步：启动 Web 应用

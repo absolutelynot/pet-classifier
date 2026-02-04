@@ -30,7 +30,7 @@ python error_analysis.py --model-path ../models/best_model.pth
 
 ```bash
 cd src
-python generate_report.py --model-path ../models/best_model.pth --use-official-test --save-confusion-matrix
+python generate_report.py --model-path ../models/best_model.pth --save-confusion-matrix
 ```
 
 ## 4. 启动Web应用
