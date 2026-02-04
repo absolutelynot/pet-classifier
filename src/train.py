@@ -12,9 +12,21 @@ import torch.optim as optim
 from torch.optim.lr_scheduler import StepLR
 from tqdm import tqdm
 import argparse
+from pathlib import Path
 
 from model import create_model
 from data_loader import get_data_loaders
+
+
+def get_project_root():
+    """获取项目根目录（pet-classifier目录）"""
+    current_file = Path(__file__).resolve()
+    # 从当前文件向上查找，直到找到包含 .git 或 requirements.txt 的目录
+    for parent in current_file.parents:
+        if (parent / 'requirements.txt').exists() or (parent / '.git').exists():
+            return parent
+    # 如果找不到，返回当前文件的上两级目录（假设在 src/ 下）
+    return current_file.parent.parent
 
 
 def train_epoch(model, train_loader, criterion, optimizer, device):
@@ -129,8 +141,14 @@ def train(args):
         device = torch.device('cpu')
         print("使用CPU")
     
+    # 如果model_dir是相对路径，转换为项目根目录下的绝对路径
+    if args.model_dir is None or (not os.path.isabs(args.model_dir) and args.model_dir == 'models'):
+        project_root = get_project_root()
+        args.model_dir = str(project_root / 'models')
+    
     # 创建保存目录
     os.makedirs(args.model_dir, exist_ok=True)
+    print(f"模型保存目录: {args.model_dir}")
     
     # 加载数据
     print("加载数据...")
@@ -212,7 +230,7 @@ def train(args):
 def main():
     parser = argparse.ArgumentParser(description='训练宠物分类模型')
     parser.add_argument('--data-dir', type=str, default=None, help='数据目录（默认：项目根目录下的data/）')
-    parser.add_argument('--model-dir', type=str, default='models', help='模型保存目录')
+    parser.add_argument('--model-dir', type=str, default=None, help='模型保存目录（默认：项目根目录下的models/）')
     parser.add_argument('--batch-size', type=int, default=32, help='批次大小')
     parser.add_argument('--epochs', type=int, default=20, help='训练轮数')
     parser.add_argument('--learning-rate', type=float, default=0.001, help='学习率')

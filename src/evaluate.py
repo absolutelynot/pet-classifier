@@ -13,9 +13,19 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import argparse
 from tqdm import tqdm
+from pathlib import Path
 
 from model import load_model
 from data_loader import get_data_loaders, get_test_dataset
+
+
+def get_project_root():
+    """获取项目根目录（pet-classifier目录）"""
+    current_file = Path(__file__).resolve()
+    for parent in current_file.parents:
+        if (parent / 'requirements.txt').exists() or (parent / '.git').exists():
+            return parent
+    return current_file.parent.parent
 
 
 def evaluate_model(model, test_loader, device, class_names=None):
@@ -136,6 +146,23 @@ def evaluate(args):
     
     print(f"使用设备: {device}")
     
+    # 如果output_dir是相对路径，转换为项目根目录下的绝对路径
+    if args.output_dir is None or (not os.path.isabs(args.output_dir) and args.output_dir == 'models'):
+        project_root = get_project_root()
+        args.output_dir = str(project_root / 'models')
+    
+    # 如果confusion_matrix_path是相对路径，转换为项目根目录下的绝对路径
+    if args.confusion_matrix_path is None:
+        args.confusion_matrix_path = os.path.join(args.output_dir, 'confusion_matrix.png')
+    elif not os.path.isabs(args.confusion_matrix_path):
+        project_root = get_project_root()
+        if args.confusion_matrix_path.startswith('models/'):
+            args.confusion_matrix_path = str(project_root / args.confusion_matrix_path)
+        else:
+            args.confusion_matrix_path = str(project_root / 'models' / os.path.basename(args.confusion_matrix_path))
+    
+    print(f"输出目录: {args.output_dir}")
+    
     # 加载模型
     print(f"加载模型: {args.model_path}")
     model = load_model(args.model_path, num_classes=args.num_classes, device=device)
@@ -204,13 +231,13 @@ def main():
     parser = argparse.ArgumentParser(description='评估宠物分类模型')
     parser.add_argument('--model-path', type=str, required=True, help='模型权重路径')
     parser.add_argument('--data-dir', type=str, default=None, help='数据目录（默认：项目根目录下的data/）')
-    parser.add_argument('--output-dir', type=str, default='models', help='输出目录')
+    parser.add_argument('--output-dir', type=str, default=None, help='输出目录（默认：项目根目录下的models/）')
     parser.add_argument('--batch-size', type=int, default=32, help='批次大小')
     parser.add_argument('--num-classes', type=int, default=37, help='类别数')
     parser.add_argument('--num-workers', type=int, default=4, help='数据加载worker数量')
     parser.add_argument('--use-official-test', action='store_true', help='使用官方测试集')
     parser.add_argument('--save-confusion-matrix', action='store_true', help='保存混淆矩阵')
-    parser.add_argument('--confusion-matrix-path', type=str, default='models/confusion_matrix.png', help='混淆矩阵保存路径')
+    parser.add_argument('--confusion-matrix-path', type=str, default=None, help='混淆矩阵保存路径（默认：models/confusion_matrix.png）')
     parser.add_argument('--save-results', action='store_true', help='保存评估结果')
     
     args = parser.parse_args()

@@ -14,6 +14,7 @@ from PIL import Image
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
 import sys
+from pathlib import Path
 
 # 添加src目录到路径
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -21,6 +22,15 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from model import load_model
 from data_loader import get_data_loaders, get_test_dataset
 from evaluate import evaluate_model
+
+
+def get_project_root():
+    """获取项目根目录（pet-classifier目录）"""
+    current_file = Path(__file__).resolve()
+    for parent in current_file.parents:
+        if (parent / 'requirements.txt').exists() or (parent / '.git').exists():
+            return parent
+    return current_file.parent.parent
 
 
 def find_confused_pairs(confusion_matrix, class_names, top_k=5):
@@ -331,6 +341,14 @@ def analyze_errors(args):
     Args:
         args: 命令行参数
     """
+    # 如果output_path是相对路径，转换为项目根目录下的绝对路径
+    if args.output_path and not os.path.isabs(args.output_path):
+        project_root = get_project_root()
+        if args.output_path.startswith('reports/'):
+            args.output_path = str(project_root / args.output_path)
+        else:
+            args.output_path = str(project_root / 'reports' / os.path.basename(args.output_path))
+    
     # 设备选择
     if torch.cuda.is_available():
         device = torch.device('cuda')
@@ -340,6 +358,7 @@ def analyze_errors(args):
         device = torch.device('cpu')
     
     print(f"使用设备: {device}")
+    print(f"报告输出路径: {args.output_path}")
     
     # 加载模型
     print(f"加载模型: {args.model_path}")
@@ -390,7 +409,7 @@ def main():
     parser = argparse.ArgumentParser(description='错误分析：找出混淆的类别对')
     parser.add_argument('--model-path', type=str, required=True, help='模型权重路径')
     parser.add_argument('--data-dir', type=str, default=None, help='数据目录（默认：项目根目录下的data/）')
-    parser.add_argument('--output-path', type=str, default='reports/error_report.html', help='输出HTML报告路径')
+    parser.add_argument('--output-path', type=str, default=None, help='输出HTML报告路径（默认：reports/error_report.html）')
     parser.add_argument('--batch-size', type=int, default=32, help='批次大小')
     parser.add_argument('--num-classes', type=int, default=37, help='类别数')
     parser.add_argument('--num-workers', type=int, default=4, help='数据加载worker数量')
@@ -398,6 +417,10 @@ def main():
     parser.add_argument('--top-k-per-pair', type=int, default=10, help='每对类别显示的错误样本数')
     
     args = parser.parse_args()
+    # 设置默认输出路径
+    if args.output_path is None:
+        project_root = get_project_root()
+        args.output_path = str(project_root / 'reports' / 'error_report.html')
     analyze_errors(args)
 
 
