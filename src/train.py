@@ -211,7 +211,7 @@ def train(args):
 
 def main():
     parser = argparse.ArgumentParser(description='训练宠物分类模型')
-    parser.add_argument('--data-dir', type=str, default='data', help='数据目录')
+    parser.add_argument('--data-dir', type=str, default=None, help='数据目录（默认：项目根目录下的data/）')
     parser.add_argument('--model-dir', type=str, default='models', help='模型保存目录')
     parser.add_argument('--batch-size', type=int, default=32, help='批次大小')
     parser.add_argument('--epochs', type=int, default=20, help='训练轮数')

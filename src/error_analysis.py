@@ -389,7 +389,7 @@ def analyze_errors(args):
 def main():
     parser = argparse.ArgumentParser(description='错误分析：找出混淆的类别对')
     parser.add_argument('--model-path', type=str, required=True, help='模型权重路径')
-    parser.add_argument('--data-dir', type=str, default='data', help='数据目录')
+    parser.add_argument('--data-dir', type=str, default=None, help='数据目录（默认：项目根目录下的data/）')
     parser.add_argument('--output-path', type=str, default='reports/error_report.html', help='输出HTML报告路径')
     parser.add_argument('--batch-size', type=int, default=32, help='批次大小')
     parser.add_argument('--num-classes', type=int, default=37, help='类别数')

@@ -394,7 +394,7 @@ def generate_report(args):
 def main():
     parser = argparse.ArgumentParser(description='生成测试准确率报告')
     parser.add_argument('--model-path', type=str, required=True, help='模型权重路径')
-    parser.add_argument('--data-dir', type=str, default='data', help='数据目录')
+    parser.add_argument('--data-dir', type=str, default=None, help='数据目录（默认：项目根目录下的data/）')
     parser.add_argument('--output-dir', type=str, default='reports', help='输出目录')
     parser.add_argument('--batch-size', type=int, default=32, help='批次大小')
     parser.add_argument('--num-classes', type=int, default=37, help='类别数')

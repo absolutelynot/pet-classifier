@@ -7,17 +7,29 @@
 
 import os
 import torch
+from pathlib import Path
 from torch.utils.data import DataLoader, random_split
 from torchvision import datasets, transforms
 from torchvision.datasets import OxfordIIITPet
 
 
-def get_data_loaders(data_dir='data', batch_size=32, num_workers=4, val_split=0.15, test_split=0.15):
+def get_project_root():
+    """获取项目根目录（pet-classifier目录）"""
+    current_file = Path(__file__).resolve()
+    # 从当前文件向上查找，直到找到包含 .git 或 requirements.txt 的目录
+    for parent in current_file.parents:
+        if (parent / 'requirements.txt').exists() or (parent / '.git').exists():
+            return parent
+    # 如果找不到，返回当前文件的上两级目录（假设在 src/ 下）
+    return current_file.parent.parent
+
+
+def get_data_loaders(data_dir=None, batch_size=32, num_workers=4, val_split=0.15, test_split=0.15):
     """
     下载Oxford-IIIT Pet数据集并创建DataLoader
     
     Args:
-        data_dir: 数据存储目录
+        data_dir: 数据存储目录（如果为None，则使用项目根目录下的data/）
         batch_size: 批次大小
         num_workers: 数据加载的worker数量
         val_split: 验证集比例
@@ -26,9 +38,30 @@ def get_data_loaders(data_dir='data', batch_size=32, num_workers=4, val_split=0.
     Returns:
         train_loader, val_loader, test_loader, num_classes
     """
-    # 数据目录
+    # 如果未指定data_dir，使用项目根目录下的data/
+    if data_dir is None:
+        project_root = get_project_root()
+        data_dir = str(project_root / 'data')
+    
+    # OxfordIIITPet的root参数应该是包含oxford-iiit-pet目录的父目录
+    # 所以root=data_dir，数据集会在data_dir/oxford-iiit-pet/下
     data_path = os.path.join(data_dir, 'oxford-iiit-pet')
     os.makedirs(data_path, exist_ok=True)
+    
+    print(f"数据目录: {data_path}")
+    
+    # 检查本地是否已有数据集（加速：如果已有数据则跳过下载）
+    images_dir = os.path.join(data_path, 'images')
+    annotations_dir = os.path.join(data_path, 'annotations')
+    dataset_exists = os.path.exists(images_dir) and os.path.exists(annotations_dir) and \
+                     len(os.listdir(images_dir)) > 0 if os.path.exists(images_dir) else False
+    
+    if dataset_exists:
+        print("✓ 检测到本地数据集，跳过下载步骤")
+        download_flag = False
+    else:
+        print("⚠ 未检测到本地数据集，开始下载...")
+        download_flag = True
     
     # 数据预处理
     # 训练集：数据增强
@@ -50,12 +83,13 @@ def get_data_loaders(data_dir='data', batch_size=32, num_workers=4, val_split=0.
                            std=[0.229, 0.224, 0.225])
     ])
     
-    # 下载完整数据集（用于后续划分）
+    # 加载数据集（如果本地已有则跳过下载）
+    # 注意：root应该是包含oxford-iiit-pet目录的父目录，不是oxford-iiit-pet本身
     full_dataset = OxfordIIITPet(
-        root=data_path,
+        root=data_dir,  # root指向data/目录，数据集会在data/oxford-iiit-pet/下
         split='trainval',
         target_types='category',
-        download=True,
+        download=download_flag,  # 根据本地是否存在决定是否下载
         transform=train_transform  # 先用train_transform，后面会重新创建
     )
     
@@ -85,14 +119,14 @@ def get_data_loaders(data_dir='data', batch_size=32, num_workers=4, val_split=0.
     
     # 重新创建验证集和测试集，使用不同的transform
     val_dataset_full = OxfordIIITPet(
-        root=data_path,
+        root=data_dir,  # root指向data/目录
         split='trainval',
         target_types='category',
         download=False,
         transform=val_test_transform
     )
     test_dataset_full = OxfordIIITPet(
-        root=data_path,
+        root=data_dir,  # root指向data/目录
         split='trainval',
         target_types='category',
         download=False,
@@ -136,18 +170,23 @@ def get_data_loaders(data_dir='data', batch_size=32, num_workers=4, val_split=0.
     return train_loader, val_loader, test_loader, num_classes, full_dataset.classes
 
 
-def get_test_dataset(data_dir='data', batch_size=32, num_workers=4):
+def get_test_dataset(data_dir=None, batch_size=32, num_workers=4):
     """
     获取官方测试集（如果可用）
     
     Args:
-        data_dir: 数据存储目录
+        data_dir: 数据存储目录（如果为None，则使用项目根目录下的data/）
         batch_size: 批次大小
         num_workers: 数据加载的worker数量
     
     Returns:
         test_loader, num_classes
     """
+    # 如果未指定data_dir，使用项目根目录下的data/
+    if data_dir is None:
+        project_root = get_project_root()
+        data_dir = str(project_root / 'data')
+    
     data_path = os.path.join(data_dir, 'oxford-iiit-pet')
     
     transform = transforms.Compose([
@@ -157,12 +196,19 @@ def get_test_dataset(data_dir='data', batch_size=32, num_workers=4):
                            std=[0.229, 0.224, 0.225])
     ])
     
+    # 检查本地是否已有测试集
+    images_dir = os.path.join(data_path, 'images')
+    annotations_dir = os.path.join(data_path, 'annotations')
+    dataset_exists = os.path.exists(images_dir) and os.path.exists(annotations_dir) and \
+                     len(os.listdir(images_dir)) > 0 if os.path.exists(images_dir) else False
+    
     # Oxford-IIIT Pet的官方测试集
+    # 注意：root应该是包含oxford-iiit-pet目录的父目录
     test_dataset = OxfordIIITPet(
-        root=data_path,
+        root=data_dir,  # root指向data/目录，数据集会在data/oxford-iiit-pet/下
         split='test',
         target_types='category',
-        download=True,
+        download=not dataset_exists,  # 如果已有数据则跳过下载
         transform=transform
     )
     
@@ -183,7 +229,7 @@ if __name__ == '__main__':
     # 测试数据加载
     print("测试数据加载...")
     train_loader, val_loader, test_loader, num_classes, classes = get_data_loaders(
-        data_dir='data',
+        data_dir=None,  # 使用默认路径（项目根目录下的data/）
         batch_size=32,
         num_workers=2
     )

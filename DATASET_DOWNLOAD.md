@@ -24,29 +24,51 @@ Oxford-IIIT Pet数据集包含两个文件：
    - 图片文件：https://www.robots.ox.ac.uk/~vgg/data/pets/data/images.tar.gz
    - 标注文件：https://www.robots.ox.ac.uk/~vgg/data/pets/data/annotations.tar.gz
 
-2. 下载完成后，将文件放到以下目录：
+2. **重要：将文件放到项目根目录下的 `data/oxford-iiit-pet/` 目录**
+   
+   假设项目根目录是 `pet-classifier/`，则完整路径为：
    ```
-   data/oxford-iiit-pet/
+   pet-classifier/data/oxford-iiit-pet/
+   ```
+   
+   如果该目录不存在，请先创建：
+   ```bash
+   cd /Users/wyy/Desktop/code/examine-202602/pet-classifier
+   mkdir -p data/oxford-iiit-pet
    ```
 
-3. 解压文件：
+3. 将下载的两个 `.tar.gz` 文件移动到该目录：
+   ```bash
+   # 假设下载文件在 ~/Downloads/ 目录
+   mv ~/Downloads/images.tar.gz data/oxford-iiit-pet/
+   mv ~/Downloads/annotations.tar.gz data/oxford-iiit-pet/
+   ```
+
+4. 解压文件：
    ```bash
    cd data/oxford-iiit-pet/
    tar -xzf images.tar.gz
    tar -xzf annotations.tar.gz
    ```
 
-4. 最终目录结构应该是：
+5. **最终目录结构应该是**（从项目根目录 `pet-classifier/` 开始）：
    ```
-   data/oxford-iiit-pet/
-   ├── images/
-   │   ├── Abyssinian_001.jpg
-   │   ├── Abyssinian_002.jpg
-   │   └── ...
-   └── annotations/
-       ├── trimaps/
-       └── xmls/
+   pet-classifier/
+   ├── data/
+   │   └── oxford-iiit-pet/
+   │       ├── images/
+   │       │   ├── Abyssinian_001.jpg
+   │       │   ├── Abyssinian_002.jpg
+   │       │   └── ... (共7390张图片)
+   │       └── annotations/
+   │           ├── trimaps/
+   │           └── xmls/
+   ├── src/
+   ├── web/
+   └── ...
    ```
+   
+   **注意**：数据必须放在 `pet-classifier/data/oxford-iiit-pet/` 目录下，代码会自动检测该位置。
 
 ### 方法2：使用下载工具（推荐）
 
@@ -80,11 +102,15 @@ aria2c -x 16 -s 16 https://www.robots.ox.ac.uk/~vgg/data/pets/data/annotations.t
 
 ```bash
 cd src
-python -c "from data_loader import get_data_loaders; get_data_loaders(data_dir='../data', batch_size=1, num_workers=0)"
+python -c "from data_loader import get_data_loaders; get_data_loaders(batch_size=1, num_workers=0)"
 ```
+
+**注意**：代码会自动检测项目根目录下的 `data/oxford-iiit-pet/` 目录，无需指定路径。
 
 如果看到类似以下输出，说明数据集已正确下载：
 ```
+数据目录: /Users/wyy/Desktop/code/examine-202602/pet-classifier/data/oxford-iiit-pet
+✓ 检测到本地数据集，跳过下载步骤
 数据集类别数: 37
 数据集总样本数: 7349
 训练集样本数: 5879
