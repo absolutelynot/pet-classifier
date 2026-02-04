@@ -1,0 +1,9 @@
+Oxford-IIIT Pet 数据集下载链接：
+
+1. 图片文件 (images.tar.gz, ~733MB):
+   https://www.robots.ox.ac.uk/~vgg/data/pets/data/images.tar.gz
+
+2. 标注文件 (annotations.tar.gz, ~3.5MB):
+   https://www.robots.ox.ac.uk/~vgg/data/pets/data/annotations.tar.gz
+
+下载后解压到: data/oxford-iiit-pet/
