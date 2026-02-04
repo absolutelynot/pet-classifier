@@ -9,18 +9,35 @@ import os
 import sqlite3
 from datetime import datetime
 from typing import List, Dict, Optional
+from pathlib import Path
+
+
+def get_project_root():
+    """获取项目根目录（pet-classifier目录）"""
+    current_file = Path(__file__).resolve()
+    # 从当前文件向上查找，直到找到包含 .git 或 requirements.txt 的目录
+    for parent in current_file.parents:
+        if (parent / 'requirements.txt').exists() or (parent / '.git').exists():
+            return parent
+    # 如果找不到，返回当前文件的上两级目录（假设在 web/ 下）
+    return current_file.parent.parent
 
 
 class PredictionDatabase:
     """预测结果数据库"""
     
-    def __init__(self, db_path='database/predictions.db'):
+    def __init__(self, db_path=None):
         """
         初始化数据库
         
         Args:
-            db_path: 数据库文件路径
+            db_path: 数据库文件路径（如果为None，则使用项目根目录下的database/predictions.db）
         """
+        # 如果未指定db_path，使用项目根目录下的database/
+        if db_path is None:
+            project_root = get_project_root()
+            db_path = str(project_root / 'database' / 'predictions.db')
+        
         self.db_path = db_path
         os.makedirs(os.path.dirname(db_path), exist_ok=True)
         self._init_database()
@@ -232,12 +249,12 @@ class PredictionDatabase:
 _db_instance = None
 
 
-def get_database(db_path='database/predictions.db') -> PredictionDatabase:
+def get_database(db_path=None) -> PredictionDatabase:
     """
     获取数据库实例（单例模式）
     
     Args:
-        db_path: 数据库文件路径
+        db_path: 数据库文件路径（如果为None，则使用项目根目录下的database/predictions.db）
     
     Returns:
         数据库实例

@@ -26,6 +26,17 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 sys.path.insert(0, str(project_root / 'src'))
 
+
+def get_project_root():
+    """获取项目根目录（pet-classifier目录）"""
+    current_file = Path(__file__).resolve()
+    # 从当前文件向上查找，直到找到包含 .git 或 requirements.txt 的目录
+    for parent in current_file.parents:
+        if (parent / 'requirements.txt').exists() or (parent / '.git').exists():
+            return parent
+    # 如果找不到，返回当前文件的上两级目录（假设在 web/ 下）
+    return current_file.parent.parent
+
 from src.model import load_model
 from web.database import get_database
 
@@ -99,8 +110,9 @@ def load_classifier_model(model_path='models/best_model.pth', num_classes=37):
     # 加载类别名称（从数据加载器获取）
     try:
         from src.data_loader import get_data_loaders
+        # 使用None让get_data_loaders自动检测项目根目录下的data/
         _, _, _, _, class_names = get_data_loaders(
-            data_dir='data',
+            data_dir=None,  # 自动使用项目根目录下的data/
             batch_size=1,
             num_workers=0
         )
@@ -158,8 +170,14 @@ async def startup_event():
     logger.info("数据库初始化完成")
     
     # 尝试加载模型
-    model_path = os.getenv('MODEL_PATH', 'models/best_model.pth')
+    # 如果MODEL_PATH环境变量未设置，使用项目根目录下的models/best_model.pth
+    model_path = os.getenv('MODEL_PATH')
+    if model_path is None:
+        project_root = get_project_root()
+        model_path = str(project_root / 'models' / 'best_model.pth')
+    
     if os.path.exists(model_path):
+        logger.info(f"找到模型文件: {model_path}")
         load_classifier_model(model_path)
     else:
         logger.warning(f"模型文件不存在: {model_path}，请先训练模型")

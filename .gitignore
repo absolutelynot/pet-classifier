@@ -51,6 +51,8 @@ models/*.pt
 # Database
 database/*.db
 database/*.db-journal
+web/database/
+web/database/*
 
 # Reports (keep structure but ignore large files)
 reports/*.html
