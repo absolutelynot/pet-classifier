@@ -16,7 +16,7 @@ import torch
 from torchvision import transforms
 from PIL import Image
 import uvicorn
-from fastapi import FastAPI, File, UploadFile, HTTPException, Form
+from fastapi import FastAPI, File, UploadFile, HTTPException, Form, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -184,7 +184,7 @@ async def startup_event():
 
 
 @app.get("/", response_class=HTMLResponse)
-async def read_root(request):
+async def read_root(request: Request):
     """主页"""
     return templates.TemplateResponse("index.html", {"request": request})
 
