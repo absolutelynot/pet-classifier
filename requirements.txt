@@ -16,7 +16,7 @@ sqlalchemy>=2.0.0
 Pillow>=10.0.0
 
 # Data Processing
-numpy>=1.24.0
+numpy>=1.24.0,<2.0.0  # NumPy 2.x与scipy/sklearn不兼容，限制为1.x版本
 pandas>=2.0.0
 
 # Visualization
